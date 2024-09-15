@@ -14,9 +14,11 @@ titlepage     = off,%
 index=totoc,%
 xcolor        = pdftex,%
 dvipsnames,%
-bibliography  = totoc,%
+%bibliography  = totoc,%
 %bibliography = numbered,% bei Bedarf einschalten
 listof        = notnumbered]{scrreprt}
+
+
 
 \input{variablendeklaration.tex} % variablendeklaration.tex wird benötigt (für verschiedene Layouts der Kapitelseite)
 
@@ -37,6 +39,7 @@ listof        = notnumbered]{scrreprt}
 \pagestyle{empty}
 
 \begin{document}
+
 
 % Schmutztitel im einseitigen Layout
 \input{schmutztitel.tex} % schmutztitel.tex wird benötigt
@@ -75,73 +78,30 @@ listof        = notnumbered]{scrreprt}
 \end{acronym}
 \cleardoublepage
 
-\input{Abstract} % ben\"{o}tigt Abstract.tex
+\input{Other/Abstract} % ben\"{o}tigt Abstract.tex
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Hier geht das Dokument richtig los
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\chapter{Einleitung}\label{chap:einleitung}
 
-% Wer's mag, hier ein Beispiel-Epigraph, in Abschlussarbeiten < Promotion eher unüblich, aber nicht verboten
-\epigraph{Schlauer Spruch.}{Schlaue Person}
-\noindent{}Hier ein Text mit Fu{\ss}note.\footnote{Fu{\ss}note}
-\Blindtext
-\cleardoublepage % jedes Kapitel ended mit \cleardoublepage, damit neues Kapitel recto startet
-
-\chapter{Theoretische Grundlagen}\label{chap:theorie}
-
-\section{Ideales Gasgesetz}\label{sec:idealesgas}
-Bezug auf Kapitel~\ref{chap:einleitung}.
-\blindtext
-\blindtext\cite{Scholze2008}\cite{Susskind2014}\cite{Maskin1985}\cite{Aggaewal2006}\cite{Aarrow1948}\cite{Fudenberg1988}
-\blindmathpaper
-\Blindtext
-
-\section{Schr\"{o}dingergleichung}\label{sec:schroedinger}
-\blindtext
-\cleardoublepage
-
-\chapter{Experimentelle Methoden}\label{chap:experiment}
-\Blindtext
-\begin{figure}
-\centering
-\includegraphics[width=0.95\textwidth]{beispielbild.jpg}
-\caption[Kurze Bildunterschrift für Abbildungsverzeichnis]{Langer Text für Bildunterschrift. \blindtext}
-\label{fig:abbildung1}
-\end{figure}
-
-\section{Elektronenspektrometer}\label{sec:electronenspectrometer}
-\blindtext
-
-\section{Vakuumanlage}\label{sec:vakuumanlage}
-\blindtext
-\cleardoublepage
-
-\chapter{Diskussion}\label{chap:diskussion}
-
-\section{Diskussionsteil A}\label{sec:diskussionA}
-\Blindtext
-
-\section{Diskussionsteil B}\label{sec:diskussionB}
-\Blindtext
-\cleardoublepage
-
-\chapter{Ausblick}\label{chap:ausblick}
-\Blindtext
-\cleardoublepage
-
+\input{1) Introduction/1_Introduction}
+\input{2) Theory/2_Theory_main}
+\input{3) Implementation/3_Implementation}
+\input{4) Future Work}
+\input{5) Conclusion}
 % Hier wird das Literaturverzeichnis eingebunden
-\printbibliography
+%\printbibliography
+
+
+\printbibliography[title={Bibliography}, heading=bibintoc]
+
 \cleardoublepage
 
 \appendix
 
-\chapter{Ergänzende Informationen 1}
-\blindtext
-\cleardoublepage
+%\chapter{Ergänzende Informationen 1}
+%\blindtext
 
-\chapter{Ergänzende Informationen 2}
-\blindtext
 
 \end{document} 
