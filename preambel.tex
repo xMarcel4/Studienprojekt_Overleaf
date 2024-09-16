@@ -1,6 +1,6 @@
 % Einbindung von wichigten Paketen
 \usepackage[headsepline=on, automark]{scrlayer-scrpage}
-\usepackage[english, main=ngerman]{babel}
+\usepackage[english, main=ngerman]{babel}  % Assuming you're using both German and English
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -51,11 +51,17 @@
 
 
 % Marcel packages
-
+\usepackage{float}  % Include the float package for [H] float positioning
 % Redefine "Kapitel" to "Chapter"
 \addto\captionsngerman{
   \renewcommand{\chaptername}{Chapter}
 }
+% Redefine the figure caption label from "Abbildung" to "Figure"
+\addto\captionsngerman{
+  \renewcommand{\figurename}{Figure}
+}
+
+
 % Farbdefinitionen
 \definecolor{jluhellblau}{RGB}{220, 230, 235}
 \definecolor{pantoneblack}{RGB}{0,0,0}
