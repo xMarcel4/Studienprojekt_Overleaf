@@ -1,0 +1,262 @@
+\section{Particle Mover}
+\label{Sec: Particle Motion}
+
+
+In particle-based simulations, such as Particle-In-Cell (\acs{PIC}) methods, particles are characterized by their mass, charge, position, and velocity. To model their dynamics, it is essential to solve Newton's equations of motion over a long period, starting from a set of predefined initial conditions \cite{young_leapfrog_2013}. Since time advances unidirectionally, techniques like central difference methods used for spatial problems are not applicable for time integration \cite{brieda_plasma_2019}. Generally, this type of integration with the discrete time step $\Delta t$ can be expressed as follows:
+ \begin{align}
+\boldvec{x}^{\mathrm{k+1}} &= \boldvec{x}^{\mathrm{k}} + \boldvec{v}^{\mathrm{k}} \Delta t, \\
+\boldvec{v}^{\mathrm{k+1}} &= \boldvec{v}^{\mathrm{k}} + \frac{q \boldvec{E}^{\mathrm{k}}}{m}  \Delta t
+\end{align}
+
+This approach is known as the Forward Euler method, a first-order accurate technique that requires initial conditions for the velocity $v$ and the position $x$ \cite{brieda_plasma_2019}. As an explicit method, it calculates the next iteration step, $k+1$, solely based on the information available at the current step, $k$.
+
+
+\subsection{Leapfrog Method}
+Methods such as the Euler method typically require the time step $\Delta t$ to approach zero in order to converge to an accurate solution \cite{brieda_plasma_2019}. This restriction results in extremely high computational costs, making practical implementation difficult. To address these limitations, the leapfrog method is a commonly used algorithm due to its relatively simple usage and improved accuracy. The leapfrog method takes advantage of the midpoint method, a frequently employed technique in numerical differentiation and integration. By interpolating the velocity with an additional half-step at the beginning, this method achieves second-order accuracy:
+\begin{align}
+        \boldvec{x}^\mathrm{k+1} &= \boldvec{x}^\mathrm{k} + \left(\frac{\boldvec{v}^\mathrm{k} + \boldvec{v}^\mathrm{k+1}}{2}\right) \Delta t\\
+        \frac{\boldvec{v}^\mathrm{k} + \boldvec{v}^\mathrm{k+1}}{2} &= \boldvec{v}^\mathrm{k} + \frac{q\,\boldvec{E}^\mathrm{k}}{ m}\ \frac{\Delta t}{2}\equiv \boldvec{v}^\mathrm{k+0.5}
+\end{align}
+
+
+The values for position and velocity are calculated in an alternating manner, where velocities are known at half time steps ($k=-0.5,0.5,1.5,...$) and particle positions are known at full time steps  ($k=0,1,2,...$). This staggered approach characterizes the leapfrog method as symplectic, helping to preserve the system's energy and ensuring 'global stability' in long-term simulations.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+    \def\yshift{-0.6}
+
+    % Time axis
+    \draw[-latex,line width = 1.5pt] (0,0) -- (11,0) node[anchor=west] {$t$};
+
+    % Time markers
+    \foreach \x/\xtext in {0/, 2/, 4/, 6/, 8/, 10/}
+      \draw (\x cm,3pt) -- (\x cm,-3pt) node[anchor=north] {\xtext};
+
+    \def\ydash{-1.9}
+    
+    \foreach \x/\xtext in {0/$t_{-1/2}$, 4/$t_{1/2}$, 8/$t_{3/2}$}
+      \draw[dashed] (\x cm,\ydash) -- (\x cm,-0.7) node[anchor=north] {};
+    %\draw[dashed] (0,-.7) -- (0,-1.9);
+
+    % Labels for fractional times, moved down
+    \node[below] at (0,\ydash) {$t_{-1/2}$};
+    \node[below] at (4,\ydash) {$t_{1/2}$};
+    \node[below] at (8,\ydash) {$t_{3/2}$};
+
+        \foreach \x/\xtext in {2/$t_0$,6/$t_1$,10/$t_2$}
+      \draw[dashed] (\x cm,\ydash) -- (\x cm,-0.23) node[anchor=north] {};
+
+    % Labels for fractional times, moved down
+    \node[below] at (2,\ydash) {$t_{0}$};
+    \node[below] at (6,\ydash) {$t_{1}$};
+    \node[below] at (10,\ydash) {$t_{2}$};
+
+    \colorlet{darkjlublue}{jlublau!90!black}
+
+    % Define a scaling factor for the line width
+    \def\thicknessFactor{1.5pt} 
+    % Blue arrows (v_-1/2, v_1/2, v_3/2) in darkjlublue color
+    \draw[-latex,darkjlublue,line width = \thicknessFactor] (0,0+\yshift) .. controls (0.5,-1.3+\yshift) and (3.5,-1.3+\yshift) .. (3.9,0+\yshift) node[midway,below] ;
+    \draw[-latex,darkjlublue,line width = \thicknessFactor] (4,0+\yshift) .. controls (4.5,-1.3+\yshift) and (7.5,-1.3+\yshift) .. (7.9,0+\yshift) node[midway,below] ;
+    \draw[-latex,darkjlublue,line width = \thicknessFactor] (8,0+\yshift) .. controls (8.5,-1.3+\yshift) and (11.5,-1.3+\yshift) .. (11.9,0+\yshift) node[midway,below];
+    
+    \def\yshift_v{-0.1}
+    % Nodes with text under the specified points in darkjlublue color with bold font
+    \node[below,darkjlublue] at (0, +\yshift_v) {\bfseries $v_{-1/2}$};
+    \node[below,darkjlublue] at (4, +\yshift_v) {\bfseries $v_{1/2}$};
+    \node[below,darkjlublue] at (8, +\yshift_v) {\bfseries $v_{3/2}$};
+
+    \colorlet{darkthmgreen}{thmgreen!90!black}
+
+    \def\yshift_x{-0.1}
+    % Nodes with text under the specified points in darkjlublue color with bold font
+    \node[above,darkthmgreen] at (2, -\yshift_x) {\bfseries $x_0$};
+    \node[above,darkthmgreen] at (6, -\yshift_x) {\bfseries $x_1$};
+    \node[above,darkthmgreen] at (10, -\yshift_x) {\bfseries $x_2$};
+
+    
+    \def\thicknessFactor{1.5pt} 
+    \def\yshift{-0.6}
+    \draw[-latex,darkthmgreen,line width = \thicknessFactor] (2,0-\yshift) .. controls (2.5,1.3-\yshift) and (5.5,1.3-\yshift) .. (5.9,0-\yshift) node[midway,below] ;
+    \draw[-latex,darkthmgreen,line width = \thicknessFactor] (6,0-\yshift) .. controls (6.5,1.3-\yshift) and (9.5,1.3-\yshift) .. (9.9,0-\yshift) node[midway,below] ;
+
+
+    %\draw[latex-,red,line width = \thicknessFactor] (0,0+.3) .. controls (0.5,1.3-\yshift) and (1.5,1.3-\yshift) .. (1.9,0-\yshift);
+
+%    \node[above,red] at (1, 2) {\bfseries $test$};
+
+
+
+
+
+    
+    \end{tikzpicture}
+    \caption{Illustration of the leapfrog method, showing the alternating calculation of particle positions ($x_\mathrm{n}$) and velocities ($v_\mathrm{n-1/2}$) at staggered time steps.}
+    \label{fig:enter-label}
+\end{figure}
+
+To initialize the leapfrog method, a velocity rewind for injected particles by half a time step is necessary. This is achieved by interpolating the initial velocity values $v^0$ with the previously calculated electric field $\boldvec{E}^0$, as shown in the equation below:
+\begin{equation}
+    \boldvec{v}^\mathrm{-0.5} = \boldvec{v}^\mathrm{0} -  \frac{q\,\boldvec{E}^\mathrm{0}}{ m}\ \frac{\Delta t}{2}
+\end{equation}
+
+
+
+\subsection{Interpolation}
+As previously discussed, the electric field is only defined at the discrete nodes of the computational mesh. However, to obtain numerically stable and physically meaningful results, it is crucial to evaluate the electric field at the position of each particle within its corresponding cell \cite{brieda_plasma_2019}. To achieve this, the electric field at the surrounding grid nodes is linearly interpolated by employing a normalized parameter $d_\mathrm{i} \in [0, 1]$. For a total of $D$ spatial dimensions, there must be a corresponding parameter for each dimension to weight the contributions of the $2^\mathrm{N}$ neighboring nodes. For the one-dimensional case, the electric field at the particle location $x_\mathrm{i}+d_\mathrm{i}$ can be accurately approximated as follows:
+\begin{align}
+    E &= E_\mathrm{i} + d_\mathrm{i}\left(E_\mathrm{i+1} - E_\mathrm{i}\right)\\
+    E &=  \left( 1-d_\mathrm{i}\right)E_\mathrm{i} + d_\mathrm{i}E_\mathrm{i+1}
+\end{align}
+
+This gathering operation enables the use of multiple mesh-based values to evaluate particle-related properties at a specific location \cite{brieda_plasma_2019}. The interpolated field values are then used to update the particle's velocity and position using the previously discussed leapfrog method.
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}[scale=.8]
+
+\def\thickness{1.3}
+
+% Axis
+\draw[-latex,line width = 1.1] (0,0) -- (12,0) node[anchor=north] {$x$};
+\draw[-latex,line width = 1.1] (0,0) -- (0,6.5) node[anchor=east] {$E(x)$};
+
+% Function line
+\draw[line width = \thickness] (2,1.7) -- (9,4.4);
+\draw[line width = \thickness] (.8,0) -- (2,1.7);
+\draw[line width = \thickness] (9,4.4) -- (11.2,4.6);
+
+% Dashed lines for points
+\draw[dashed,thick] (2,0) -- (2,1.7);
+\draw[dashed,thick] (2,1.7) -- (0,1.7);
+
+\draw[dashed,thick] (6.5,3.45)  -- (6.5,0);
+\draw[dashed,thick] (6.5,3.45)  -- (0,3.45);
+
+\draw[dashed,thick] (9,4.4)  -- (9,0);
+\draw[dashed,thick] (9,4.4)  -- (0,4.4);
+
+\def\thicknessaxis{1.1}
+% Ticks and labels on axes
+\draw[line width = \thicknessaxis] (2,0) -- (2,-0.2) node[anchor=north] {$x_\mathrm{i}$};
+\draw[line width = \thicknessaxis] (6.5,0) -- (6.5,-0.2) node[anchor=north] {$x_\mathrm{i}+d_\mathrm{i}$};
+\draw[line width = \thicknessaxis] (9,0) -- (9,-0.2) node[anchor=north] {$x_\mathrm{i+1}$}; 
+
+\draw[line width = \thicknessaxis] (0,1.7) -- (-0.2,1.7) node[anchor=east] {$E(x_\mathrm{i})$}; 
+\draw[line width = \thicknessaxis] (0,3.45) -- (-0.2,3.45) node[anchor=east] {$E(x_\mathrm{i}+d_\mathrm{i})$}; 
+\draw[line width = \thicknessaxis] (0,4.4) -- (-0.2,4.4) node[anchor=east] {$E(x_\mathrm{i+1})$};
+% Points
+\filldraw[fill=white, draw=white] (2, 1.7) circle (2.3pt*2.2);
+\fill[fill=jlublau, draw=black]  (2, 1.7) circle (2.3pt*2.2);  % Draw blue points
+\filldraw[fill=white, draw=white] (9,4.4) circle (2.3pt*2.2);
+\fill[fill=jlublau, draw=black]  (9,4.4) circle (2.3pt*2.2);  % Draw blue points
+\fill[thmgreen,draw=black] (6.5,3.45) circle (4.05pt*2.2);  % Green particle
+
+% Additional points
+%\fill[fill=jlublau, draw=black]  (2, 7) circle (2.3pt*2.2);  % Draw blue points
+%\fill[fill=jlublau, draw=black]  (9,7) circle (2.3pt*2.2);  % Draw blue points
+%\fill[thmgreen,draw=black] (6.5,7) circle (4.05pt*2.2);  % Green particle
+
+\end{tikzpicture}
+
+
+
+    \caption{Visualization of the linear interpolation of the electric field values at the adjacent nodes $i$ and $i+1$ to estimate the field at the particle's position $x_\mathrm{i}+d_\mathrm{i}$.}
+    \label{fig:enter-label}
+\end{figure}
+
+In contrast to gathering, the scattering process is used to distribute particle-based data back to the computational mesh. During this process, each macroparticle influences the surrounding mesh nodes by contributing to quantities such as the number density $n$. The number density is reset and recalculated at every iteration, based solely on the current positions of particles within each cell. In order to perform this calculation, the algorithm loops over all particles of different species, taking the node volume $V_\mathrm{node}$ into account:
+\begin{align}
+    n_\mathrm{i}^{\mathrm{new}} &= n_\mathrm{i}^{\mathrm{old}} +  (1 - d_\mathrm{i}) \frac{w_\mathrm{mp}}{V_\mathrm{node}}\\
+    n_\mathrm{i+1}^{\mathrm{new}} &= n_\mathrm{i+1}^{\mathrm{old}} + d_\mathrm{i} \frac{w_\mathrm{mp}}{V_\mathrm{node}}
+\end{align}
+Lastly, the charge density $\rho$ is updated to be used in the next iteration step by the potential solver (discussed in section \ref{Sec: potential solver}). This density is reset to zero at each iteration before being incremented by the charge $q$ of each species, scaled by the previously introduced number density $n_\mathrm{i}^\mathrm{new}$:
+
+\begin{equation}
+\rho_\mathrm{i}^\mathrm{new} = \rho_\mathrm{i}^\mathrm{old} + q \cdot n_\mathrm{i}^\mathrm{new}
+\end{equation}
+
+
+\begin{comment}
+
+ 
+Update the charge density to feed in the next iteration back to the potential solver
+
+same for rho, gets reseted to zero every iteration
+
+
+\begin{verbatim}
+# velocity rewind
+vel -= self.charge / self.mass * ef_part * (0.5 * self.world.get_dt())
+\end{verbatim}
+
+    \begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+    \def\yshift{-0.6}
+
+    % Time axis
+    \draw[-latex,line width = 1.5pt] (0,0) -- (11,0) node[anchor=west] {$t$};
+
+    % Time markers
+    \foreach \x/\xtext in {0/, 2/, 4/, 6/, 8/, 10/}
+      \draw (\x cm,3pt) -- (\x cm,-3pt) node[anchor=north] {\xtext};
+
+    \def\ydash{-1.9}
+    
+    \foreach \x/\xtext in {0/$t_{1/2}$, 4/$t_{3/2}$, 8/$t_{5/2}$}
+      \draw[dashed] (\x cm,\ydash) -- (\x cm,-0.7) node[anchor=north] {};
+    %\draw[dashed] (0,-.7) -- (0,-1.9);
+
+    % Labels for fractional times, moved down
+    \node[below] at (0,\ydash) {$t_{1/2}$};
+    \node[below] at (4,\ydash) {$t_{3/2}$};
+    \node[below] at (8,\ydash) {$t_{5/2}$};
+
+        \foreach \x/\xtext in {2/$t_1$,6/$t_2$,10/$t_3$}
+      \draw[dashed] (\x cm,\ydash) -- (\x cm,-0.23) node[anchor=north] {};
+
+    % Labels for fractional times, moved down
+    \node[below] at (2,\ydash) {$t_{1}$};
+    \node[below] at (6,\ydash) {$t_{2}$};
+    \node[below] at (10,\ydash) {$t_{3}$};
+
+    \colorlet{darkjlublue}{jlublau!90!black}
+
+    % Define a scaling factor for the line width
+    \def\thicknessFactor{1.5pt} 
+    % Blue arrows (v_1/2, v_3/2, v_5/2) in darkjlublue color
+    \draw[-latex,darkjlublue,line width = \thicknessFactor] (0,0+\yshift) .. controls (0.5,-1.3+\yshift) and (3.5,-1.3+\yshift) .. (3.9,0+\yshift) node[midway,below] ;
+    \draw[-latex,darkjlublue,line width = \thicknessFactor] (4,0+\yshift) .. controls (4.5,-1.3+\yshift) and (7.5,-1.3+\yshift) .. (7.9,0+\yshift) node[midway,below] ;
+    \draw[-latex,darkjlublue,line width = \thicknessFactor] (8,0+\yshift) .. controls (8.5,-1.3+\yshift) and (11.5,-1.3+\yshift) .. (11.9,0+\yshift) node[midway,below];
+    
+    \def\yshift_v{-0.1}
+    % Nodes with text under the specified points in darkjlublue color with bold font
+    \node[below,darkjlublue] at (0, +\yshift_v) {\bfseries $v_{1/2}$};
+    \node[below,darkjlublue] at (4, +\yshift_v) {\bfseries $v_{3/2}$};
+    \node[below,darkjlublue] at (8, +\yshift_v) {\bfseries $v_{5/2}$};
+
+    \colorlet{darkthmgreen}{thmgreen!90!black}
+
+    \def\yshift_x{-0.1}
+    % Nodes with text under the specified points in darkjlublue color with bold font
+    \node[above,darkthmgreen] at (2, -\yshift_x) {\bfseries $x_1$};
+    \node[above,darkthmgreen] at (6, -\yshift_x) {\bfseries $x_2$};
+    \node[above,darkthmgreen] at (10, -\yshift_x) {\bfseries $x_3$};
+
+    
+    \def\thicknessFactor{1.5pt} 
+    \def\yshift{-0.6}
+    \draw[-latex,darkthmgreen,line width = \thicknessFactor] (2,0-\yshift) .. controls (2.5,1.3-\yshift) and (5.5,1.3-\yshift) .. (5.9,0-\yshift) node[midway,below] ;
+    \draw[-latex,darkthmgreen,line width = \thicknessFactor] (6,0-\yshift) .. controls (6.5,1.3-\yshift) and (9.5,1.3-\yshift) .. (9.9,0-\yshift) node[midway,below] ;
+
+
+
+    
+    \end{tikzpicture}
+    \caption{Caption}
+    \label{fig:enter-label}
+\end{figure}
+
+\end{comment}
