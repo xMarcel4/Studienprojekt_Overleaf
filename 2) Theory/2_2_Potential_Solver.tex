@@ -1,0 +1,215 @@
+\section{Potential Solver}\label{Sec: potential solver}
+
+To solve partial differential equations (\acs{PDE}s) like Poisson’s Equation in complex systems, numerical techniques such as finite difference methods (\acs{FDM}), finite element methods (\acs{FEM}), and spectral methods are essential \cite{brieda_plasma_2019}. Due to its relatively straightforward integration, \acs{FDM} was selected for the scope of the outlined simulation. This method builds upon the generally infinite Taylor Series expansion to approximate derivatives by replacing them with finite differences on a discrete grid. The Taylor Series expansion allows for estimating a function's value at a point offset by a small distance $\Delta x$ from another point. In one-dimensional cases, the equation can be typically expressed as \cite{arfken_mathematical_2013}:
+
+\begin{equation}
+f(x + \Delta x) = \sum_{n=0}^{\infty} \frac{(\Delta x)^n}{n!} f^{(n)}(x)
+\end{equation}
+
+Introducing the simplified notation $f_\mathrm{i} \equiv f(x_\mathrm{i})$ streamlines the handling of discrete node points $i$ in subsequent calculations. Correspondingly, the function values at adjacent nodes are given by $f_\mathrm{i+1} \equiv f(x + \Delta x)$ and $f_\mathrm{i-1} \equiv f(x - \Delta x)$. Given that $\Delta x \ll 1$ and due to the rapid factorial growth in the denominator, higher-order terms diminish quickly, leading to the following simplified expansion of the Taylor series \cite{brieda_plasma_2019}:
+
+
+\begin{align}
+\label{Eq: Taylor i+1}f_{\mathrm{i+1}} &= f_{\mathrm{i}} + \frac{\Delta x}{1!}\frac{\partial f}{\partial x} + \frac{(\Delta x)^2}{2!}\frac{\partial^2 f}{\partial x^2} + \frac{(\Delta x)^3}{3!}\frac{\partial^3 f}{\partial x^3} + \cdots\\
+\nonumber\\\vspace{-2.5cm}
+\label{Eq: Taylor i-1}f_{\mathrm{i-1}} &= f_{\mathrm{i}} - \frac{\Delta x}{1!}\frac{\partial f}{\partial x} + \frac{(\Delta x)^2}{2!}\frac{\partial^2 f}{\partial x^2} - \frac{(\Delta x)^3}{3!}\frac{\partial^3 f}{\partial x^3} + \cdots
+\end{align}
+
+A simplified equation with second-order accuracy can be derived by forming the sum of these two Taylor series expansions. The higher-order terms are denoted as \acs{HOT} but can be disregarded for the subsequent analyses:
+\begin{align}    
+f_{\mathrm{i+1}} + f_{\mathrm{i-1}} = 2 f_{\mathrm{i}} + (\Delta x)^2 \frac{\partial^2 f}{\partial x^2} + \text{HOT}
+\end{align}
+This expression can be rearranged to obtain the standard central difference formula for the second derivative:
+\begin{align}
+\frac{\partial^2 f}{\partial x^2} = \frac{f_\mathrm{i-1} - 2f_\mathrm{i} + f_\mathrm{i+1}}{(\Delta x^2)}
+\end{align}
+
+Substituting the Poisson Equation (see Eq. \ref{Eq: Poissions}) into this expression yields the discretized form of the second derivative of the electric potential $\phi$:
+
+\begin{equation}\label{Eq: Discrete Poisson}
+\frac{\phi_{\mathrm{i-1}} - 2\phi_{\mathrm{i}} + \phi_{\mathrm{i+1}}}{(\Delta x)^2} = -\frac{\rho_{\mathrm{i}}}{\epsilon_0} \quad\quad i \in [1, n_\mathrm{i} - 2]
+\end{equation}
+
+Generally, The system consists of a total of $n_\mathrm{i}$ nodes. However, the equation is not directly solvable at the boundaries, necessitating the use of Dirichlet boundary conditions. To clarify this one-dimensional derivation, the boundary values at the two edge nodes are fixed to $\phi_\mathrm{left}$ and $\phi_\mathrm{right}$, respectively. As a result, $n_\mathrm{i} -2$ equations remain to be solved for the inner nodes.
+
+To demonstrate the \acs{FDM} approach for solving Poisson's equation, a mesh comprising a total of 5 nodes is employed as an illustrative example:
+\begin{align}
+    \phi_0 &= \phi_{\text{left}} \\
+    (1 / \Delta x^2)(\phi_0 - 2\phi_1 + \phi_2) &= -\rho_1 / \epsilon_1 \\
+    (1 / \Delta x^2)(\phi_1 - 2\phi_2 + \phi_3) &= -\rho_2 / \epsilon_2 \\
+    (1 / \Delta x^2)(\phi_2 - 2\phi_3 + \phi_4) &= -\rho_3 / \epsilon_3 \\
+    \phi_4 &= \phi_{\text{right}}
+\end{align}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale = 1.8]
+    % Define color
+    %\definecolor{jlublau}{rgb}{0.0, 0.44, 0.87}
+
+    % Set the spacing between points
+    \def\spacing{1.4}
+    \def\height{.3}
+    % Draw vertical lines at the first and last points
+    \draw[line,line width = 2pt] (0,-\height) --(0,\height);
+    \draw[line,line width = 2pt] (4*\spacing,-\height) --(4*\spacing,\height);
+
+    % Draw dashed lines between the points
+    \draw[dashed] (0,0) -- (4*\spacing,0);
+    
+    % Loop to create 5 points and connect them with dashed lines
+    \foreach \x in {0,1,...,4} {
+        \fill[fill=jlublau, draw=black]  (\x*\spacing,0) circle (2.3pt);  % Draw blue points
+        \node[above] at (\x*\spacing,\height) {$i=\x$}; % Add labels above each point
+    }
+    \fill[thmgreen,draw=black] (1.6*\spacing,0) circle (4.05pt);  % Red particle with radius 3pt
+
+    \draw[-latex,thick] (-0.15, -0.42)-- (-0.03,-.12);  
+    \node[below] at (-0.15, -0.36) {$\phi_\mathrm{left}$};
+    % Arrow and label for the right side
+    \draw[-latex,thick] (5.75, -0.42)-- (5.63,-.12);  
+    \node[below] at (5.75, -0.36) {$\phi_\mathrm{right}$};
+
+    
+
+    \end{tikzpicture}
+    \caption{Illustration of a one-dimensional mesh with a total of $n_\mathrm{i}=5$ nodes. The outer two nodes are constrained by Dirichlet boundary conditions to specific values of $\phi$}
+    \label{fig:points}
+\end{figure}
+
+Furthermore, the discrete Poisson equation (see Eq. \ref{Eq: Discrete Poisson})  can be reformulated into matrix notation featuring a $n_\mathrm{i} \times n_\mathrm{i}$ coefficient matrix. Using the boundary conditions $\phi_\mathrm{left}$ and $\phi_\mathrm{right}$ from the previous example lead to the following expression:
+
+\begin{equation}\label{Eq: Poisson Matrix}
+    \frac{1}{(\Delta x)^2}
+    \begin{pmatrix}
+        (\Delta x)^2 & 0 & 0 & \dots & 0 \\
+        1 & -2 & 1 & \dots & 0 \\
+        \vdots & \ddots & \ddots & \ddots & \vdots \\
+        0 & \dots & 1 & -2 & 1 \\
+        0 & \dots & 0 & 0 & (\Delta x)^2
+    \end{pmatrix}
+    \begin{pmatrix}
+        \phi(x_0) \\
+        \phi(x_1) \\
+        \vdots \\
+        \phi(x_{n-2}) \\
+        \phi(x_{n-1})
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+        \phi_\mathrm{left} \\
+        \frac{\rho(x_1)}{\epsilon_0} \\
+        \vdots \\
+        \frac{\rho(x_{n-2})}{\epsilon_0} \\
+        \phi_\mathrm{right}
+    \end{pmatrix}
+\end{equation}
+\vspace{0.3cm}
+
+Consequently, the problem shifts from solving a differential equation to solving a system of linear equations in the form:
+
+\begin{equation}\label{Eq: general linear system}
+    \boldvec{A} \boldvec{\phi} = \boldvec{b}
+\end{equation}
+
+Such a system can be solved either using direct methods or by employing iterative solving algorithms. 
+Direct methods, such as the Thomas algorithm, always require a total of $2N$ computations for a system with $N$ unknowns, whereas iterative methods are not constrained by a fixed number of computations \cite{brieda_plasma_2019}. While the Thomas algorithm offers a straightforward implementation for one-dimensional problems, it struggles with more complex higher-dimensional applications \cite{brieda_plasma_2019}. Therefore, iterative solvers are employed for the field-solving scheme in this \acs{PIC} simulation, progressively refining the estimates for $\phi$ until a predefined convergence criterion is met (discussed in more detail in Section \ref{Sec: Convergence}).
+\begin{comment}
+
+\begin{align}
+f(x+\Delta x) &= f(x) + \frac{\Delta x}{1!}\frac{\partial f}{\partial x} + \frac{(\Delta x)^2}{2!}\frac{\partial^2 f}{\partial x^2} + \frac{(\Delta x)^3}{3!}\frac{\partial^3 f}{\partial x^3} + \cdots\\
+f(x-\Delta x) &= f(x) - \frac{\Delta x}{1!}\frac{\partial f}{\partial x} + \frac{(\Delta x)^2}{2!}\frac{\partial^2 f}{\partial x^2} - \frac{(\Delta x)^3}{3!}\frac{\partial^3 f}{\partial x^3} + \cdots
+\end{align}
+
+
+wegen boundary eigene Gleichung 
+\end{comment}
+\subsection{Gauss–Seidel Method}
+\label{Sec: Gauss Seidel Method}
+The Gauss-Seidel method is an iterative approach widely used for solving systems of linear equations, particularly when direct methods become computationally expensive. Similar to other iterative solvers, it starts with an initial guess for the solution vector and refines this guess at each step by progressively updating the variables until convergence is achieved \cite{sauer_numerical_2012}. In order to solve for all inner nodes $n$ in the system, the linear system of equations (see Eq. \ref{Eq: general linear system}) can be expanded into the following expression:
+
+\begin{equation}
+\begin{pmatrix}
+a_{11} & \cdots & a_{1 \mathrm{n}}\\
+\vdots & \ddots & \vdots\\
+a_{\mathrm{n}1} & \cdots & a_{\mathrm{nn}}
+\end{pmatrix}
+\begin{pmatrix}
+\phi_1 \\
+\vdots\\
+\phi_n
+\end{pmatrix}
+=
+\begin{pmatrix}
+b_1 \\
+\vdots\\
+b_n
+\end{pmatrix}
+\end{equation}
+
+To exemplify, the matrix system can be expressed explicitly for a single component $b_\mathrm{i}$ as follows:
+
+\begin{equation}
+    b_\mathrm{i} = a_{\mathrm{i}1} \phi_1 + a_{\mathrm{i}2} \phi_2 + \dots + a_{\mathrm{ii}} \phi_i + \dots + a_{\mathrm{in}} \phi_n  
+\end{equation}
+
+Transforming the equation into a generalized form, it can be rearranged for the electric potential $\phi_\mathrm{i}$ at a single representative node $i$. In this form, the Kronecker delta $\delta_\mathrm{ij}$ is used to exclude the terms on the main diagonal from the total summation over all other nodes:
+
+\begin{equation}
+    \phi_\mathrm{i} = \frac{1}{a_{ii}} \left( b_\mathrm{i} - \sum_{j=1}^n (1-\delta_\mathrm{ij}) a_{\mathrm{{ij}}} \phi_\mathrm{j} \right)
+\end{equation}
+
+By introducing the counter variable $m$, the method iteratively updates the solution at each step ($m+1$). Incorporating the Poisson equation (see Eq. \ref{Eq: Poisson Matrix}) into this iterative framework leads to the following update formula for $ \phi_\mathrm{i}^{\mathrm{m+1}}$:
+\begin{equation}
+    \phi_\mathrm{i}^{\mathrm{m+1}} = -\frac{(\Delta x)^2}{2} \left[ b_\mathrm{i} - \left(  \frac{1}{(\Delta x)^2} \phi_\mathrm{i-1}^{\mathrm{m}} + \frac{1}{(\Delta x)^2} \phi_\mathrm{i+1}^{\mathrm{m}}\right)\right]
+\end{equation}
+
+The system can be significantly simplified since all non-boundary coefficients in Poisson's equation are identical. By rearranging the terms, the final form of the so-called Jacobi algorithm can be derived:
+
+\begin{equation}
+    \phi_i^{(m+1)} = \frac{\phi_{i-1}^{(m)} + \phi_{i+1}^{(m)} - b_\mathrm{i} (\Delta x)^2}{2} \quad \quad \text{with  }b_\mathrm{i}=-\frac{\rho_\mathrm{i}}{\epsilon_0}
+\end{equation}
+
+Building on that iterative framework, the Gauss-Seidel method offers an enhancement over the Jacobi approach, typically providing faster convergence rates \cite{brieda_plasma_2019}. The Gauss-Seidel (\acs{GS}) scheme always updates $\phi$ using the current values, whereas Jacobi completes an entire iteration using information from the previous step. This makes \acs{GS} more memory efficient, as it only needs to store one array instead of two. In contrast, the Jacobi method requires one array for the old values and another for the updated ones. This can be easily implemented using the following equation:
+\begin{equation}
+    \phi_i^{(m+1)} = \frac{\phi_{i-1}^{(m+1)} + \phi_{i+1}^{(m)} - b_\mathrm{i} (\Delta x)^2}{2}
+\end{equation}
+
+Since the $\phi_{i-1}^{(m+1)}$ node has already been calculated in the iteration loop, it is logical to directly incorporate it into the updated iteration step for $\phi_i^{(m+1)}$. This allows for more efficient computation by using the most recently updated values as soon as they become available.
+
+
+\subsection{Successive Over-Relaxation}
+
+To further speed up the convergence rate, a commonly used approach is the implementation of Successive Over-Relaxation (\acs{SOR}). This method refines the Gauss-Seidel approach by introducing a relaxation factor $w$, accelerating the updates to $\phi$ by making each iteration step more aggressive. Furthermore, for values of $w$ between 0 and 1, known as under-relaxation, the method can help achieve successful convergence in systems that might otherwise diverge using the conventional Gauss-Seidel method \cite{allahviranloo_successive_2005}. When $w > 1$, the convergence rate is accelerated, with a typical range for $w$ being between 1 and 2. In applications such as electrostatic \acs{PIC} simulations, a commonly used value is around 1.4, as it balances faster convergence speeds with reliable outcomes \cite{brieda_plasma_2019}. However, the ideal value of $w$ is highly dependent on the specific characteristics of the system and must be determined empirically through trial and error (discussed in depth in Section \ref{Sec: Optimizing Relaxation Factor}). Generally, the updated potential is determined as follows:
+
+\begin{equation}
+\phi_\mathrm{updated} = \phi_\mathrm{old} + w (\phi_\mathrm{new} - \phi_\mathrm{old})
+\end{equation}
+
+
+\subsection{Convergence}\label{Sec: Convergence}
+
+In iterative methods, convergence refers to the process of obtaining progressively closer approximations to the solution of a system with each iteration \cite{barrett_templates_1994}. Generally, the process begins with an initial guess for the variable of interest $\phi$ and refines it through successive iterations, ideally converging to the true solution. Stationary methods, such as the introduced Gauss-Seidel method (see Section \ref{Sec: Gauss Seidel Method}), follow this approach to progressively reduce the error in each iteration \cite{barrett_templates_1994}. Convergence is achieved when the difference between iterations diminishes, ideally approaching zero as the iteration step $m$ increases, and the solution stabilizes. Mathematically, this can be expressed as:
+
+\begin{equation}
+    \boldsymbol{\phi} = \lim_{m \to \infty} \boldsymbol{\phi}^{m}
+\end{equation}
+
+
+In practical applications, an error margin is introduced with $\boldvec{R}$ representing the residual, which measures the discrepancy in the system at each iteration. As $\phi^\mathrm{m}$ approaches the true solution, $R^\mathrm{m}$ becomes progressively smaller, indicating that the solution is converging. This relationship can be represented by the following equation \cite{brieda_plasma_2019}:
+\begin{align}
+    \boldvec{A} \boldvec{\phi}^\mathrm{m} &= \boldvec{b}^\mathrm{m} + \boldvec{R}^\mathrm{m}\\ 
+    \intertext{The magnitude of the residual vector is defined using the $L_2$ norm, as shown in the following equation \cite{brieda_plasma_2019}:}
+    \|R\| &= \sqrt{\frac{\sum_{i}^{n} (R_i)^2}{n}}\\
+    \intertext{In the multidimensional simulation outlined in this report, this calculation is performed every 25 iterations due to the significant computational demands involved. The stopping criteria are based on either reaching a maximum number of iterations or the residual falling below a predefined error threshold:}
+     \|R\| &< \epsilon_\mathrm{tol}
+\end{align}
+
+
+\begin{comment}
+
+
+\begin{equation}
+    \phi = \lim_{m \to \infty} \phi^m \quad \text{such that} \quad |\phi^{m+1} - \phi^m| < \epsilon
+\end{equation}
+\end{comment}

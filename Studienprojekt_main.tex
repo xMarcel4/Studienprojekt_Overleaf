@@ -39,6 +39,7 @@ listof        = notnumbered]{scrreprt}
 \pagestyle{empty}
 
 \begin{document}
+\newcommand{\boldvec}[1]{\bm{#1}}
 
 
 % Schmutztitel im einseitigen Layout
@@ -71,11 +72,7 @@ listof        = notnumbered]{scrreprt}
 \listoftables
 \cleardoublepage
 
-\chapter*{Abk\"{u}rzungsverzeichnis}
-\begin{acronym}
-\acro{eugh}[ESA]{\dotfill European Space Agency}
-\acro{eu}[JLU]{\dotfill Justus-Liebig-Universit\"{a}t Gie{\ss}en}
-\end{acronym}
+\input{Other/Abbreviations}
 \cleardoublepage
 
 \input{Other/Abstract} % ben\"{o}tigt Abstract.tex
@@ -86,7 +83,7 @@ listof        = notnumbered]{scrreprt}
 
 
 \input{1) Introduction/1_Introduction}
-\input{2) Theory/2_Theory_main}
+\input{2) Theory/2_0_Theory_main}
 \input{3) Implementation/3_Implementation}
 \input{4) Future Work}
 \input{5) Conclusion}

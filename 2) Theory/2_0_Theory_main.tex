@@ -1,0 +1,59 @@
+\chapter{Theoretical Framework}
+In particle simulations, the behavior of charged particles is governed by the fundamental equations of motion derived from Newton's second law \cite{griffiths_introduction_2017}. The position and velocity of a particle change according to the following first-order differential equations \cite{brieda_plasma_2019}:
+\begin{align}
+    \frac{d\boldvec{r}}{dt} &= \boldvec{v}\\
+    \frac{d\boldvec{v}}{dt} &= \frac{1}{m} \boldvec{F}
+\end{align}
+
+The first equation describes how the particle's position changes over time, equal to its velocity $\boldvec{v}$. The latter expresses the particle's acceleration $\boldvec{a}$, directly proportional to the net force $\boldvec{F}$ acting on it and inversely proportional to the particle's mass $m$.
+\\
+
+In the context of charged particles, a force arises from the interaction with the electric field $\boldvec{E}$ and magnetic field $\boldvec{B}$. This interaction is governed by the Lorentz force, which combines the effects of both fields to dictate the motion of a particle with a specific charge $q$:
+\begin{align}
+\boldvec{F}_{Lorentz} &= \boldvec{F}_{\text{electric}} + \boldvec{F}_{\text{magnetic}} \\
+            &= q\boldvec{E} + q (\boldvec{v} \times \boldvec{B})
+\end{align}
+
+These fields are governed by the four fundamental equations of electromagnetism, known as Maxwell's equations. Generally, this set of partial differential equations relates the electric and magnetic fields to sources of charge and current, and is commonly expressed as \cite{zangwill_modern_2013}:
+\begin{align}
+\text{Gauss' law:} \quad & \nabla \cdot \boldvec{E} = \frac{\rho}{\epsilon_0} \\
+\text{Gauss' law for magnetism:} \quad & \nabla \cdot \boldvec{B} = 0 \\
+\text{Faraday's law:} \quad & \nabla \times \boldvec{E} = - \frac{\partial \boldvec{B}}{\partial t} \\
+\text{Ampere's law:}\label{amperes law} \quad & \nabla \times \boldvec{B} = \mu_0 \left( \boldvec{j} + \epsilon_0 \frac{\partial \boldvec{E}}{\partial t} \right)
+\end{align}
+
+In this context, $\rho(\boldvec{r})$ represents the electric charge density, and $\boldsymbol{j}(\boldvec{r})$ refers to the current density. The constants $\varepsilon_0$ and $\mu_0$ are the vacuum permittivity and permeability, respectively.
+
+For the scope of this research, we restrict the problem to an electrostatic assumption, where the magnetic field is assumed to be time-invariant. This assumption implies that the current density in the system is sufficiently low, such that corresponding to Amperes Law (see Eq. \ref{amperes law}) any self-induced magnetic field can be ignored. Additionally, the influence of gravity is negligible in this context, as it is multiple orders of magnitude weaker than the electrostatic forces acting on the particles. As a result, the force acting on the particles is reduced to the purely electrostatic force \cite{brieda_plasma_2019}, given by:
+\begin{align}
+\label{Electrostatic Force}\boldvec{F} &= q \boldvec{E}\\
+\intertext{In electrostatics, the electric field \(\boldvec{E}\) is by convention the negative gradient of a scalar potential $\phi$: \cite{griffiths_introduction_2017}}
+\label{E to Phi}\boldvec{E} &= - \nabla \phi\\
+\intertext{Substituting that into Gauss’ law results in:}
+\nabla \cdot (- \nabla \phi) &= \frac{\rho}{\epsilon_0}\\
+\intertext{Finally, rearranging leads to the Poisson equation:}
+\label{Eq: Poissions}\nabla^2 \phi &= - \frac{\rho}{\epsilon_0}
+\end{align}
+This powerful second-order partial differential equation relates the electric potential \(\phi\) to the charge distribution \(\rho\) in an electrostatic system. The objective of the subsequent sections is to find a solution for the electric potential under certain boundary conditions, thereby enabling the determination of the electric field (see Eq. \ref{E to Phi}). Subsequently, the electric field values can be used to update the position and velocity of all particles in the system through the corresponding electrostatic force (see Eq. \ref{Electrostatic Force}). This procedure is repeated until a predefined exit criterion is met, such as completing a specified simulation time or reaching a steady state (illustrated in Fig. \ref{fig: Flowchart}).
+\\\newline
+Alternatively, by applying Gauss’s Law to a single spherical charge distribution in electrostatics, the following expression for the electric field can be derived \cite{zangwill_modern_2013}:
+\begin{equation}
+\boldvec{E}_i = \frac{1}{4 \pi \epsilon_0} \sum_j^N q_j \frac{\boldvec{r}_i - \boldvec{r}_j}{\left| \boldsymbol{r}_i - \boldsymbol{r}_j \right|^3} \quad i \neq j
+\end{equation}
+This expression illustrates the superposition principle for discrete point charges, where the total electric field $\boldvec{E}_i$ at a given point $\boldvec{r}_i$ is the sum of the fields produced by each charge $q_j$. This also holds for a continuous charge distribution, where the sum is replaced by an integral over the region containing the charge. By utilizing the equation for the electrostatic force (see Eq. \ref{Electrostatic Force}), it is possible to derive the Coulomb force for a particle interacting with a total of $N$ charged particles:
+\begin{align}
+\boldvec{F}_{i} &= \frac{q_i }{4 \pi \epsilon_0} \sum_j^N q_j \frac{\boldvec{r}_i - \boldvec{r}_j}{|\boldvec{r}_i - \boldvec{r}_j|^3} \quad i \neq j
+\end{align}
+
+Conceptually, it would be possible to run a particle simulation by evaluating the Coulomb force for a system containing $N$ particles at each iteration step.  However, this direct approach is practically impossible due to the excessive computational and memory requirements, as it involves $N(N-1) \approx N^2$ force calculations per time step \cite{brieda_plasma_2019}. To overcome these challenges, the Particle-in-Cell (\acs{PIC}) method offers an efficient solution by computing the electric field throughout the system, thus significantly reducing computational complexity.
+
+\begin{comment}    
+One such approach is the use of macroparticles, which represent a stack of $w_m$ real ions or electrons moving in unison (discussed comprehensively in Section \textbf{!} \ref{sec: ES PIC}). The used simulation process is illustrated below:
+\end{comment}
+
+\input{2) Theory/2_1_Electrostatic_Particle_in_Cell_Method}
+\input{2) Theory/2_2_Potential_Solver}
+\input{2) Theory/2_3_Electric_Field_Solver}
+\input{2) Theory/2_4_Particle_Mover}
+\input{2) Theory/2_5_Particle_Sources}
+
