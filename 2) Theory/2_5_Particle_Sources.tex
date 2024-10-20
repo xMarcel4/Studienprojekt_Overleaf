@@ -1,0 +1,224 @@
+\section{Introduction Particle Sources}
+
+To simulate the flow of charged particles in a system, it is crucial to introduce these particles in a way that aligns with the specific problem being addressed. Generally, each particle contains distinct information about its position, velocity, and macroparticle weight $w_\mathrm{mp}$. Moreover, particles from the same gas species can be grouped to simplify the management of different ion and electron behaviors in the later stages of the simulation. For all particles within a given species, physical properties like mass and charge are uniform and need to be assigned only once during the initialization process. Although macroparticle weight can vary, particles of the same species tend to share the same weight, allowing for easier collective handling at the species level \cite{brieda_plasma_2019}. In general, the behavior of a local particle density $\rho$ across space and time is governed by the principle of mass conservation expressed mathematically through the use of the continuity equation \cite{griffiths_introduction_2017}:
+
+\begin{align}
+\frac{\partial \rho}{\partial t} &+ \nabla \cdot (\rho \boldvec{v}) = 0\\
+    \intertext{By integrating over the computational volume and applying the Divergence Theorem on the right-hand side enables to rewrite the equation as follows \cite{brieda_plasma_2019}:}
+    \int_V \frac{\partial \rho}{\partial t} dV &= - \int_V \nabla \cdot (\rho \boldvec{v}) dV \\
+    &= - \oint_\mathrm{S} \rho \boldvec{v} \cdot \hat{e}_\mathrm{3} \, dA \\
+    \intertext{Considering the initial state, where the density and velocity $\boldvec{v}_\mathrm{z}$ of the inflowing ions are assumed to be uniform across the entire integration surface, the rate of change in the number of particles $N$ over time can be expressed as:}
+    \frac{dN}{dt} &= \rho v_\mathrm{z} A_{\text{inlet}}
+\end{align}
+
+This equation describes the number of real particles entering the system per time step through a single surface area $A_{\text{inlet}}$. The particles are assumed to have a unidirectional velocity component $\boldvec{v}_\mathrm{z}$, normal to this surface. The number of particles to inject per time step $\Delta t$ to maintain a consistent flow rate $\dot{N}$ can be thus calculated as:
+\begin{equation}
+    N = \dot{N} \Delta t
+\end{equation}
+
+
+\subsection{Cold Beam Source}
+
+To simplify the simulation process, a cold beam source is selected as the particle injection method, which avoids the added complexities introduced by thermal motion \cite{brieda_plasma_2019}. Generally, particle velocity in a gas kinetic system typically comprises two main components. The drift velocity represents $\bar{v}_\mathrm{d}$ the collective, directed movement of particles, while the thermal velocity $\tilde{v}_\mathrm{th}$ accounts for the random distribution of velocities about the mean \cite{brieda_plasma_2019}. This can be mathematically expressed as:
+
+\begin{equation}
+    v = \bar{v}_\mathrm{d} + \tilde{v}_\mathrm{th}
+\end{equation}
+
+As the name suggests, the temperature of a cold beam source is assumed to be approximately zero, effectively eliminating the contribution of thermal velocity. With this assumption, the thermal velocity can be neglected, simplifying the velocity to consist solely of the drift component. Since all particles are assumed to have equal drift velocities in the context of the outlined simulation, the cold beam source injects a stream of mono-energetic particles into the system.
+
+As previously discussed, the particles are injected into the simulation domain through a single injection surface $A_\mathrm{inlet}$. This area can be defined in a discretized form as follows:
+
+\begin{equation}
+    A_{\text{inlet}} = L_x L_y = (n_i - 1) \Delta x \cdot (n_j - 1) \Delta y
+\end{equation}
+
+To ensure that particles are evenly and realistically distributed across the injection plane, incorporating randomness into the simulation process is beneficial. This stochastic approach was implemented by the use of the variables $\mathcal{R}_1$ and $\mathcal{R}_2$, which represent uniformly distributed values between 0 and 1:
+
+\begin{align}
+    x &= x_0 + \mathcal{R}_1 L_\mathrm{x} \\
+    y &= y_0 + \mathcal{R}_2 L_\mathrm{y} \\
+    z &= z_0
+\end{align}
+The particle position $(x,y,z)$ can thus be defined relative to the origin coordinates $(x_0,y_0,z_0)$. The $x$ and $y$ coordinates are then scaled randomly by the total side length of the injection plane, $L_\mathrm{x}$ and $L_\mathrm{y}$, to place the particles across the full area of the injection plane. For a small set of particles, this process can be illustrated as follows:
+
+\begin{figure}[H]
+    \centering
+
+\begin{tikzpicture}[scale=1.5, rotate around y=-22]
+
+    % Front face (colored face that we are looking into)
+
+    \draw[thick,-latex] (-3,-2,0) -- (-2.2,-2,0) node[anchor=north] {$z$};  % x-axis
+    \draw[thick,-latex] (-3,-2,0) -- (-3,-1.2,0) node[anchor=west] {$y$};   % y-axis
+    \draw[thick,-latex] (-3,-2,0) -- (-3,-2,-.8) node[anchor=north] {$x$};   % z-axis
+
+
+    
+    \fill[gray!50] (0,-1,-1) -- (0,1,-1) -- (0,1,1) -- (0,-1,1) -- cycle;
+    \draw[thick] (0,-1,-1) -- (0,1,-1) -- (0,1,1) -- (0,-1,1) -- cycle;
+
+    % Top face (extended x-direction to 6)
+    \draw[thick,gray!60] (0,1,1) -- (5,1,1) -- (5,1,-1) -- (0,1,-1) -- cycle;
+
+    % Bottom face (extended x-direction to 6)
+    \draw[thick,gray!60] (0,-1,1) -- (5,-1,1) -- (5,-1,-1) -- (0,-1,-1) -- cycle;
+
+    % Back face (extended x-direction to 6)
+    \draw[thick,gray!60] (5,-1,1) -- (5,1,1) -- (5,1,-1) -- (5,-1,-1) -- cycle;
+
+    % Left face (remains the same)
+    \draw[thick,gray!60] (0,-1,1) -- (0,1,1) -- (5,1,1) -- (5,-1,1) -- cycle;
+
+    % Right face (remains the same)
+    \draw[thick,gray!60] (0,-1,-1) -- (0,1,-1) -- (5,1,-1) -- (5,-1,-1) -- cycle;
+    \draw[thick] (0,-1,-1) -- (0,1,-1) -- (0,1,1) -- (0,-1,1) -- cycle;
+
+    
+    \draw [decorate,decoration={brace,amplitude=10pt,mirror,raise=5pt},thick] (0,-1,1) -- (5,-1,1) node[midway, under,xshift=-0.2em,yshift=-2em]{$L_z$};
+    
+    \draw [decorate,decoration={brace,amplitude=10pt,raise=5pt,rotate around y=90},thick,] (0,-1,1) -- (0,1,1) node[midway, under, xshift = -2.2em]{$L_y$};
+    
+\draw [decorate,decoration={brace,amplitude=10pt,raise=5pt,mirror},thick] 
+    (0,1,-1) -- (0,1,1) 
+    node[midway,above,xshift = -1em,yshift = 1.1em]{$L_x
+    $};
+    
+  % Red vectors orthogonal to three selected points (in the xy-plane)
+
+    \draw[-latex,thick,red,line width=1.1] (0,.75,-.75) -- (1.0,.75,-.75);                % Orthogonal vector for second point
+    \draw[-latex,thick,red,line width=1.1] (0,0.5,0.2886) -- (1,0.5,0.2886);                % Orthogonal vector for second point
+    \draw[-latex,thick,red,line width=1.1] (0,-0.7,0.3) -- (1.0,-0.7,0.3);                % Orthogonal vector for second point
+    \draw[-latex,thick,red,line width=1.1] (0,-.1,.7) -- (1.0,-.1,.7);                % Orthogonal vector for second point
+    % Draw the red vector with a label in bold red
+    \draw[-latex,thick,red,line width=1.1] (0,-.3,-.7) -- (1.0,-.3,-.7)
+        node[anchor=west,red] {$\boldvec{v_\mathrm{z}}$};
+    \draw[-latex,thick,red,line width=1.1]  (0,0.3,-0.7) -- (1.0,0.3,-0.7);  
+    \draw[-latex,thick,red,line width=1.1]  (0,-0.2049,-0.0168)  -- (1.0,-0.2049,-0.0168);
+     
+     \shade[ball color=thmgreen] (0,.75,-.75) circle (.12cm);
+    \shade[ball color=thmgreen] (0,0.5,0.2886) circle (.12cm);
+    \shade[ball color=thmgreen] (0,-0.7,0.3) circle (.12cm);
+    \shade[ball color=thmgreen] (0,-.1,.7) circle (.12cm);
+    \shade[ball color=thmgreen] (0,-.3,-.7) circle (.12cm);
+
+   \shade[ball color=thmgreen] (0,0.3,-0.7) circle (.12cm);
+    \shade[ball color=thmgreen] (0,-0.2049,-0.0168) circle (.12cm);
+
+  
+\end{tikzpicture}
+    \caption{Illustration of cold beam source for a small set of particles with a specific drift velocity $v_\mathrm{z}$.}
+    \label{fig:enter-label}
+\end{figure}
+
+\subsection{Particles Leaving Domain}
+Particles extending beyond the boundary of the computational mesh must be handled according to the specific requirements of the problem under investigation. A common approach simply consists of eliminating the particle from the simulation by setting its weight to zero. However, given a sufficiently large computational domain, the charged particles eventually return as they are trapped within a potential well \cite{brieda_plasma_2019}. This can be implemented by reflecting the particle at the boundary elastically, meaning it is injected back into the domain without losing energy. For a particle leaving the domain on the right-hand side, this can be mathematically expressed as follows:
+
+\begin{align}
+    \Delta x_{\text{out}} &= x_\mathrm{p} - x_\mathrm{i} \\
+    (x_\mathrm{p})_{\text{new}} &= x_\mathrm{p} + \Delta x_{\text{out}} \\
+                        &= 2x_\mathrm{i} - x_\mathrm{p}
+\end{align}
+
+
+In this context, $x_\mathrm{p}$ represents the position of the particle, while $x_\mathrm{i}$ denotes the length of a cell in the x-dimension. To account for elastic reflection, the particle's velocity must also be reflected by multiplying it by $-1$, ensuring the particle reverses its direction in all dimensions. Both the elastic reflection of particles and their deletion when leaving the computational domain are illustrated below:
+
+% Define the square with dots command
+\newcommand{\drawSquareWithDots}{
+    % Draw a square
+    \draw[line width = 1] (0,0) -- (3,0) -- (3,3) -- (0,3) -- cycle;
+    \def\dashed{.5}
+    \draw[dashed] (0,0) -- (0,-\dashed)
+    \draw[dashed] (0,0) -- (-\dashed,0)
+
+    \draw[dashed] (3,0) -- (3,-\dashed)
+    \draw[dashed] (3,0) -- (3+\dashed,0)
+
+    \draw[dashed] (3,3) -- (3,3+\dashed)
+    \draw[dashed] (3,3) -- (3+\dashed,3)
+
+    \draw[dashed] (0,3) -- (0-\dashed,3)
+    \draw[dashed] (0,3) -- (0,3+\dashed)
+    % Add blue dots at the nodes
+    \fill[jlublau] (0,0) circle (3.5pt);
+    \fill[jlublau] (3,0) circle (3.5pt);
+    \fill[jlublau] (3,3) circle (3.5pt);
+    \fill[jlublau] (0,3) circle (3.5pt);
+
+
+
+}
+
+\begin{figure}[H]
+    \centering
+    % First subfigure
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \begin{tikzpicture}[scale=1.3]
+
+            \drawSquareWithDots % Call the custom command
+            \draw[thick,red] (1.2,.7)--(3,1.279);
+            %\draw[-latex,thick,red] (1.2,.7)--;
+            \draw[-latex,thick,red!50,dashed] (3,1.278)--(3.82,1.54204);
+
+            % Define the radius of the green circle (assume it's around 6.16pt)
+            \def\circleRadius{6.16pt}
+            
+            % Draw the red arrow, stopping it before the green circle
+            %\draw[-latex,thick,red] (1.2,.7)--(4,1.6); 
+            
+        \def\scaleFactor{1} % Adjust this number to make the circle larger or smaller
+
+        \path[thick, red, -latex] (3,1.278) edge (2.18,1.54204);
+                        
+                \draw[dashed,thick] (4,1.6)-- (4,2.1);
+                \draw[-latex,thick] (4,2.1) -- (3,2.1) node[midway,above] {$\Delta x_{\text{out}}$};
+                \draw[latex-,thick] (4,2.1) -- (3,2.1);
+                
+                \fill[thmgreen!40,draw=black] (1.2,.7) circle (6.16pt);  % Green particle with black 
+            \fill[thmgreen!75,draw=black] (4,1.6) circle (6.16pt);  % Green particle with black 
+\draw [decorate,decoration={brace,amplitude=10pt,raise=5pt,rotate around y=90},thick,] (0.05,3)-- (2.95,3) node[midway, above, yshift = 1.2em]{$x_\mathrm{i}$};
+
+            \node at (4,1.45) [below] {$(x_\mathrm{p},y_\mathrm{p})$};  % Node at the same coordinates
+
+            \node at (-0.5,0) [below] {$(x_\mathrm{0},y_\mathrm{0})$};  % Node at the same coordinates
+            
+                \fill[thmgreen,draw=black] (2,1.6) circle (6.16pt);  % Green particle with black 
+                
+        \end{tikzpicture}
+        \centering
+        \caption{Reflect Particles}
+    \end{subfigure}
+    \hfill
+    % Second subfigure
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \begin{tikzpicture}[scale=1.3]
+            \drawSquareWithDots % Call the custom command
+                        \draw[thick,red] (1.2,.7)--(3,1.279);
+            %\draw[-latex,thick,red] (1.2,.7)--;
+            \draw[-latex,thick,red!50,dashed] (3,1.278)--(3.82,1.54204);
+
+            % Define the radius of the green circle (assume it's around 6.16pt)
+            \def\circleRadius{6.16pt}
+            
+            % Draw the red arrow, stopping it before the green circle
+            %\draw[-latex,thick,red] (1.2,.7)--(4,1.6); 
+            
+        \def\scaleFactor{1} % Adjust this number to make the circle larger or smaller
+
+                        
+                
+                \fill[thmgreen!40,draw=black] (1.2,.7) circle (6.16pt);  % Green particle with black 
+                \fill[thmgreen,draw=black] (4,1.6) circle (6.16pt);  % Green particle with black 
+                \draw[thick,red!90,line width=2] (3.8,1.4)--(4.2,1.8);
+                \draw[thick,red!90,line width=2] (3.8,1.8)--(4.2,1.4);
+
+
+
+        \end{tikzpicture}
+        \caption{Delete Particles}
+    \end{subfigure}
+    \caption{Illustration of the two approaches for handling particles leaving the computational domain. The varying opacity of the particles indicates different iteration steps throughout the simulation.}
+\end{figure}
+

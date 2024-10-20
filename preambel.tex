@@ -24,7 +24,8 @@
 \usepackage{epigraph}
 \usepackage{ellipsis}
 \usepackage{soul}
-\usepackage[nohyperlinks]{acronym}
+%\usepackage[nohyperlinks]{acronym}
+\usepackage{acronym}
 \usepackage[autostyle,german=guillemets]{csquotes}
 \usepackage[defaultlines = 4, all]{nowidow}
 \clubpenalty = 9999
@@ -51,7 +52,15 @@
 
 
 % Marcel packages
+\usepackage{comment}
 \usepackage{float}  % Include the float package for [H] float positioning
+% Define a new command for bold vectors
+\usepackage{bm}  % For bold math symbols
+\newcommand{\boldvec}[1]{\bm{#1}}
+
+\usepackage{caption}
+\usepackage{subcaption}
+
 % Redefine "Kapitel" to "Chapter"
 \addto\captionsngerman{
   \renewcommand{\chaptername}{Chapter}
@@ -60,7 +69,34 @@
 \addto\captionsngerman{
   \renewcommand{\figurename}{Figure}
 }
+\usepackage{pgfplots}
+\usetikzlibrary{3d}
+\usetikzlibrary{decorations.pathreplacing}
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{myCustomColor}{RGB}{44,162,95}  % This is an orange-like color
+\definecolor{myCustomPurple}{RGB}{84,39,136}  % This is an orange-like color
 
+
+\lstset{
+    language=Python,                 % Use Python as the base language (can be any language)
+    basicstyle=\ttfamily\footnotesize, % Set basic font
+    commentstyle=\color{myCustomColor}\ttfamily,  % Set custom RGB color for comments
+    keywordstyle=[1]\color{red},      % Set style for first set of keywords
+    keywordstyle=[2]\color{red},       % Set style for second set of keywords
+    keywordstyle=[3]\color{blue},       % Set style for second set of keywords
+    keywordstyle=[4]\color{orange},       % Set style for second set of keywords
+    keywords=[1]{def, return, if, else, while, for, in, break}, % First set of keywords
+    keywords=[2]{int, float, str, list, dict},     % Second set of keywords
+    keywords=[3]{add_sphere,add_plane_with_hole,in_sphere},     % Second set of keywords
+    keywords=[4]{range},     % Second set of keywords
+    morestring=[b]',                  % Handle strings enclosed in single quotes
+    morecomment=[l]{//},              % Line comments (Python uses #, modify as needed)
+    showstringspaces=false,           % Don't show spaces in strings
+    numbers=left,                     % Line numbers on the left
+    numberstyle=\tiny\color{gray},    % Line number style
+    frame=single                      % Frame the code
+}
 
 % Farbdefinitionen
 \definecolor{jluhellblau}{RGB}{220, 230, 235}
