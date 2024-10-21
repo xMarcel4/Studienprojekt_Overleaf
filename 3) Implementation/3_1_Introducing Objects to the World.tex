@@ -29,7 +29,7 @@ def in_sphere(self, x):
 
 The basic procedure involves iterating over all nodes in the system and checking whether each point lies within the desired geometry. If this condition is met, the node is assigned a specific object value, allowing for the storage of information about the simulation world for further analysis in tools such as ParaView. An illustration of such a charged sphere is shown below:
 
-\begin{figure}
+\begin{figure}[H]
     \centering
 \includegraphics[width=0.7\linewidth]{figures/sphere_paraview.png}    
     \caption{Caption}
@@ -39,7 +39,7 @@ The basic procedure involves iterating over all nodes in the system and checking
 
 
 
-\begin{figure} [H]
+\begin{figure}[H]
     \centering
     \begin{lstlisting}
 def add_plane_with_hole(self, z_0, thickness, phi_plane, hole_0,hole_r):
@@ -59,6 +59,13 @@ for i in range(self.ni):
                 self.objectid.data[i, j, k] = 1  # Set object flag
                 self.phi.data[i, j, k] = phi_plane  # Set potential
     \end{lstlisting}
+    \caption{Caption}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{figures/GIT_Paraview.png}
     \caption{Caption}
     \label{fig:enter-label}
 \end{figure}
