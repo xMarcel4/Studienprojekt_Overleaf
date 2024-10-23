@@ -178,7 +178,7 @@ Building on that iterative framework, the Gauss-Seidel method offers an enhancem
 Since the $\phi_{i-1}^{(m+1)}$ node has already been calculated in the iteration loop, it is logical to directly incorporate it into the updated iteration step for $\phi_i^{(m+1)}$. This allows for more efficient computation by using the most recently updated values as soon as they become available.
 
 
-\subsection{Successive Over-Relaxation}
+\subsection{Successive Over-Relaxation}\label{Sub: Successive Over-Relaxation}
 
 To further speed up the convergence rate, a commonly used approach is the implementation of Successive Over-Relaxation (\acs{SOR}). This method refines the Gauss-Seidel approach by introducing a relaxation factor $w$, accelerating the updates to $\phi$ by making each iteration step more aggressive. Furthermore, for values of $w$ between 0 and 1, known as under-relaxation, the method can help achieve successful convergence in systems that might otherwise diverge using the conventional Gauss-Seidel method \cite{allahviranloo_successive_2005}. When $w > 1$, the convergence rate is accelerated, with a typical range for $w$ being between 1 and 2. In applications such as electrostatic \acs{PIC} simulations, a commonly used value is around 1.4, as it balances faster convergence speeds with reliable outcomes \cite{brieda_plasma_2019}. However, the ideal value of $w$ is highly dependent on the specific characteristics of the system and must be determined empirically through trial and error (discussed in depth in Section \ref{Sec: Optimizing Relaxation Factor}). Generally, the updated potential is determined as follows:
 

@@ -33,12 +33,10 @@ The basic procedure involves iterating over all nodes in the system and checking
     \centering
 \includegraphics[width=0.7\linewidth]{figures/sphere_paraview.png}    
     \caption{Caption}
-    \label{fig:enter-label}
+    \label{fig: Sphere simulation domain}
 \end{figure}
 
-
-
-
+The outlined procedure can be extended to simulate more complex geometries commonly found in practical applications, such as those encountered in gridded electrostatic ion thrusters. In those systems, positively charged ions are accelerated and precisely focused by a series of 2 or 3 grids, each containing typically thousands of coaxial apertures \cite{noauthor_gridded_nodate}. The ions are accelerated due to the potential difference between the first and the second grid, known as the screen and the accelerator grid, respectively \cite{foster_review_2024}. Simulating these ion thrusters accurately requires modeling variations in the thickness and size of the grid structure, as well as the electric potential applied to each grid. A simplistic version of such a grid aperture can be implemented using the following approach:
 \begin{figure}[H]
     \centering
     \begin{lstlisting}
@@ -63,6 +61,7 @@ for i in range(self.ni):
     \label{fig:enter-label}
 \end{figure}
 
+Such a system can be effectively visualized using ParaView, providing a detailed representation of the grid structure and particle dynamics. The following illustration demonstrates two grids with apertures of varying plane thickness and size. On the left side of the simulation domain is an inlet, from which charged particles could be injected at a specified drift velocity:
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{figures/GIT_Paraview.png}
